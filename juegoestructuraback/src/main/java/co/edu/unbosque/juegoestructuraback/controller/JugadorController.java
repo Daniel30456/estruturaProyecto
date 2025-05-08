@@ -36,5 +36,7 @@ public class JugadorController {
         } else {
             return new ResponseEntity<>("Token inválido o expirado.", HttpStatus.NOT_FOUND);
         }
+        
+        
     }
 }
