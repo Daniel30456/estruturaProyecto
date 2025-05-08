@@ -25,4 +25,18 @@ public class UnidadController {
     public ResponseEntity<List<UnidadDTO>> listarUnidades() {
         return ResponseEntity.ok(unidadService.listarUnidades());
     }
+    
+    @PutMapping("/mover")
+    public ResponseEntity<String> moverUnidad(
+            @RequestParam int unidadId,
+            @RequestParam int nuevaX,
+            @RequestParam int nuevaY) {
+
+        String resultado = unidadService.moverUnidad(unidadId, nuevaX, nuevaY);
+        return ResponseEntity.ok(resultado);
+    }
+    @PostMapping("/atacar")
+    public String atacar(@RequestParam("atacanteId") Long atacanteId, @RequestParam("defensorId") Long defensorId) {
+        return unidadService.atacar(atacanteId, defensorId);
+    }
 }

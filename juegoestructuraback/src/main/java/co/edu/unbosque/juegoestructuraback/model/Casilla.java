@@ -6,48 +6,89 @@ import jakarta.persistence.*;
 @Table(name = "casillas")
 public class Casilla {
 
-	private @Id @GeneratedValue(strategy = GenerationType.IDENTITY) Integer id;
+    public enum TipoTerreno {
+        LLANURA, MONTAÑA, BOSQUE, AGUA, EDIFICIO
+    }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     private int x;
     private int y;
-    private String tipo;
+
+    @Enumerated(EnumType.STRING)
+    private TipoTerreno tipo;
+
+    private boolean obstaculo;
 
     public Casilla() {}
 
-    public Casilla(int x, int y, String tipo) {
+    public Casilla(int x, int y, TipoTerreno tipo) {
         this.x = x;
         this.y = y;
         this.tipo = tipo;
+        this.obstaculo = (tipo == TipoTerreno.AGUA); // Agua es un obstáculo por defecto
     }
 
-	public int getX() {
-		return x;
-	}
+    // Getters y setters
 
-	public void setX(int x) {
-		this.x = x;
-	}
+    public Integer getId() {
+        return id;
+    }
 
-	public int getY() {
-		return y;
-	}
+    public int getX() {
+        return x;
+    }
 
-	public void setY(int y) {
-		this.y = y;
-	}
+    public void setX(int x) {
+        this.x = x;
+    }
 
-	public String getTipo() {
-		return tipo;
-	}
+    public int getY() {
+        return y;
+    }
 
-	public void setTipo(String tipo) {
-		this.tipo = tipo;
-	}
+    public void setY(int y) {
+        this.y = y;
+    }
 
-	@Override
-	public String toString() {
-		return "Casilla [id=" + id + ", x=" + x + ", y=" + y + ", tipo=" + tipo + "]";
-	}
+    public TipoTerreno getTipo() {
+        return tipo;
+    }
 
-   
+    public void setTipo(TipoTerreno tipo) {
+        this.tipo = tipo;
+        if (tipo == TipoTerreno.AGUA) {
+            this.obstaculo = true;
+        }
+    }
+
+    public boolean isObstaculo() {
+        return obstaculo;
+    }
+
+    public void setObstaculo(boolean obstaculo) {
+        this.obstaculo = obstaculo;
+    }
+
+    // Lógica de bonificación de defensa
+    public int getBonificacionDefensa() {
+        return switch (tipo) {
+            case MONTAÑA -> 5;
+            case BOSQUE -> 3;
+            case EDIFICIO -> 2;
+            default -> 0;
+        };
+    }
+
+    public boolean esTransitable() {
+        return !obstaculo;
+    }
+
+    @Override
+    public String toString() {
+        return "Casilla [id=" + id + ", x=" + x + ", y=" + y + ", tipo=" + tipo +
+                ", obstaculo=" + obstaculo + "]";
+    }
 }

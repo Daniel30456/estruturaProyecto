@@ -16,4 +16,4 @@ public class JuegoestructurabackApplication {
 		return new ModelMapper();
 	}
 
-}
+}	

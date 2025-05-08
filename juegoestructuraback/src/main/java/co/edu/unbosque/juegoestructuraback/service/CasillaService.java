@@ -14,18 +14,17 @@ public class CasillaService {
     @Autowired
     private CasillaRepository casillaRepository;
 
-    private static final String[] TIPOS = {"llano", "agua", "bosque", "ciudad"};
-
     public List<CasillaDTO> generarMapa(int filas, int columnas) {
         List<CasillaDTO> mapaDTO = new ArrayList<>();
+        Casilla.TipoTerreno[] tipos = Casilla.TipoTerreno.values();  // Acceso al enum interno
 
         for (int i = 0; i < filas; i++) {
             for (int j = 0; j < columnas; j++) {
-                String tipo = TIPOS[new Random().nextInt(TIPOS.length)];
+                Casilla.TipoTerreno tipo = tipos[new Random().nextInt(tipos.length)];
                 Casilla casilla = new Casilla(i, j, tipo);
                 casillaRepository.save(casilla); 
 
-                mapaDTO.add(new CasillaDTO(i, j, tipo));
+                mapaDTO.add(new CasillaDTO(i, j, tipo.name())); // Se guarda el nombre del tipo como String
             }
         }
 
@@ -34,7 +33,7 @@ public class CasillaService {
 
     public List<CasillaDTO> obtenerMapaGuardado() {
         return casillaRepository.findAll().stream()
-                .map(c -> new CasillaDTO(c.getX(), c.getY(), c.getTipo()))
+                .map(c -> new CasillaDTO(c.getX(), c.getY(), c.getTipo().name()))
                 .toList();
     }
 }
