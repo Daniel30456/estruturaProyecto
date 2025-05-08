@@ -1,6 +1,7 @@
 package co.edu.unbosque.juegoestructuraback.controller;
 
 import co.edu.unbosque.juegoestructuraback.dto.JugadorDTO;
+import co.edu.unbosque.juegoestructuraback.model.Jugador;
 import co.edu.unbosque.juegoestructuraback.service.JugadorService;
 
 import jakarta.mail.MessagingException;
@@ -28,6 +29,21 @@ public class JugadorController {
         }
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody JugadorDTO dto) {
+        try {
+            Jugador jugador = jugadorService.login(dto.getEmail(), dto.getContraseña());
+            return new ResponseEntity<>("Inicio de sesión exitoso. Bienvenido " + jugador.getNombre(), HttpStatus.OK);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error en el inicio de sesión.", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    
     @GetMapping("/verificar")
     public ResponseEntity<String> verificar(@RequestParam String token) {
         boolean verificado = jugadorService.verificarCuenta(token);

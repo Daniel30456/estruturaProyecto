@@ -32,6 +32,28 @@ public class JugadorService {
         emailService.enviarCorreoVerificacion(jugador);
     }
 
+    public Jugador login(String email, String contraseña) {
+        Optional<Jugador> jugadorOpt = jugadorRepository.findByEmail(email);
+        
+        if (jugadorOpt.isPresent()) {
+            Jugador jugador = jugadorOpt.get();
+
+            // Validar contraseña (sin encriptar en este caso) y si está verificado
+            if (jugador.getContraseña().equals(contraseña)) {
+                if (jugador.isVerificado()) {
+                    return jugador;
+                } else {
+                    throw new IllegalStateException("Cuenta no verificada.");
+                }
+            } else {
+                throw new IllegalArgumentException("Contraseña incorrecta.");
+            }
+        } else {
+            throw new IllegalArgumentException("Correo no registrado.");
+        }
+    }
+
+    
     public boolean verificarCuenta(String token) {
         Optional<Jugador> jugadorOptional = jugadorRepository.findByTokenVerificacion(token);
         if (jugadorOptional.isPresent()) {
