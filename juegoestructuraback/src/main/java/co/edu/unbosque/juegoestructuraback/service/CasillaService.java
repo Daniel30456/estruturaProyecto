@@ -7,33 +7,52 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CasillaService {
 
+    private static final int FILAS_FIJAS = 12;
+    private static final int COLUMNAS_FIJAS = 12;
+
     @Autowired
     private CasillaRepository casillaRepository;
 
-    public List<CasillaDTO> generarMapa(int filas, int columnas) {
+    /**
+     * Genera el mapa una sola vez con tamaño fijo y terrenos aleatorios.
+     * Si ya existe un mapa, devuelve el guardado.
+     */
+    public List<CasillaDTO> obtenerMapa() {
+        List<Casilla> casillasGuardadas = casillaRepository.findAll();
+        if (!casillasGuardadas.isEmpty()) {
+            return casillasGuardadas.stream()
+                    .map(c -> new CasillaDTO(c.getId(), c.getX(), c.getY(), c.getTipo().name()))
+                    .collect(Collectors.toList());
+        }
+
         List<CasillaDTO> mapaDTO = new ArrayList<>();
-        Casilla.TipoTerreno[] tipos = Casilla.TipoTerreno.values();  // Acceso al enum interno
+        Casilla.TipoTerreno[] tipos = Casilla.TipoTerreno.values();
+        Random random = new Random();
 
-        for (int i = 0; i < filas; i++) {
-            for (int j = 0; j < columnas; j++) {
-                Casilla.TipoTerreno tipo = tipos[new Random().nextInt(tipos.length)];
+        for (int i = 0; i < FILAS_FIJAS; i++) {
+            for (int j = 0; j < COLUMNAS_FIJAS; j++) {
+                Casilla.TipoTerreno tipo = tipos[random.nextInt(tipos.length)];
                 Casilla casilla = new Casilla(i, j, tipo);
-                casillaRepository.save(casilla); 
+                casillaRepository.save(casilla);
 
-                mapaDTO.add(new CasillaDTO(i, j, tipo.name())); // Se guarda el nombre del tipo como String
+                mapaDTO.add(new CasillaDTO(casilla.getId(), casilla.getX(), casilla.getY(), casilla.getTipo().name()));
             }
         }
 
         return mapaDTO;
     }
 
-    public List<CasillaDTO> obtenerMapaGuardado() {
-        return casillaRepository.findAll().stream()
-                .map(c -> new CasillaDTO(c.getX(), c.getY(), c.getTipo().name()))
-                .toList();
+    /**
+     * Borra el mapa actual y genera uno nuevo con terrenos aleatorios.
+     * Este método puede usarse desde un endpoint si se desea regenerar el mapa.
+     */
+    public List<CasillaDTO> reiniciarMapa() {
+        casillaRepository.deleteAll();
+        return obtenerMapa(); // Genera automáticamente uno nuevo porque ya no habrá casillas
     }
 }

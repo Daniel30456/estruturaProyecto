@@ -1,17 +1,32 @@
 package co.edu.unbosque.juegoestructuraback.dto;
 
+
+
 public class CasillaDTO {
-    private int x;
-    private int y;
-    private String tipo;
 
-    public CasillaDTO() {}
+	private int id;
+	private int x;
+	private int y;
+	private String tipo;
 
-    public CasillaDTO(int x, int y, String tipo) {
-        this.x = x;
-        this.y = y;
-        this.tipo = tipo;
-    }
+	public CasillaDTO() {
+	}
+
+	public CasillaDTO(int id,int x, int y, String tipo ) {
+		this.id = id;
+		this.x = x;
+		this.y = y;
+		this.tipo = tipo;
+		
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 
 	public int getX() {
 		return x;
@@ -42,5 +57,4 @@ public class CasillaDTO {
 		return "CasillaDTO [x=" + x + ", y=" + y + ", tipo=" + tipo + "]";
 	}
 
- 
 }
