@@ -23,12 +23,13 @@ public class JugadorService {
         Jugador jugador = new Jugador();
         jugador.setNombre(dto.getNombre());
         jugador.setEmail(dto.getEmail());
-        jugador.setContraseña(dto.getContraseña()); // sin encriptar
+        jugador.setContraseña(dto.getContraseña()); 
 
         jugador.setVerificado(false);
         jugador.setTokenVerificacion(UUID.randomUUID().toString());
 
         jugadorRepository.save(jugador);
+        System.out.println("Enviando correo a: " + jugador.getEmail());
         emailService.enviarCorreoVerificacion(jugador);
     }
 
@@ -38,7 +39,6 @@ public class JugadorService {
         if (jugadorOpt.isPresent()) {
             Jugador jugador = jugadorOpt.get();
 
-            // Validar contraseña (sin encriptar en este caso) y si está verificado
             if (jugador.getContraseña().equals(contraseña)) {
                 if (jugador.isVerificado()) {
                     return jugador;

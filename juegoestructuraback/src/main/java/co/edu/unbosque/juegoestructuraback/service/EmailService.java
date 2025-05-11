@@ -24,6 +24,9 @@ public class EmailService {
         helper.setTo(jugador.getEmail());
         helper.setSubject(asunto);
         helper.setText(mensaje, false);
+        System.out.println("Enviando correo a: " + jugador.getEmail());
+        System.out.println("Asunto: " + asunto);
+        System.out.println("Mensaje: " + mensaje);
 
         mailSender.send(mimeMessage);
     }
