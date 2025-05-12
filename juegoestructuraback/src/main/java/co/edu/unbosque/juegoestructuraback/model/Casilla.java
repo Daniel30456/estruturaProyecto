@@ -6,9 +6,9 @@ import jakarta.persistence.*;
 @Table(name = "casillas")
 public class Casilla {
 
-    public enum TipoTerreno {
-        LLANURA, MONTAÑA, BOSQUE, AGUA, EDIFICIO
-    }
+	public enum TipoTerreno {
+	    LLANO, MONTAÑA, BOSQUE, AGUA, EDIFICIO
+	}
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
