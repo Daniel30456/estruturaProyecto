@@ -2,41 +2,57 @@ package co.edu.unbosque.juegoestructuraback.controller;
 
 import co.edu.unbosque.juegoestructuraback.dto.UnidadDTO;
 import co.edu.unbosque.juegoestructuraback.service.UnidadService;
+import co.edu.unbosque.juegoestructuraback.model.Unidad;
+import co.edu.unbosque.util.structure.linkedlist.MyLinkedList;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.awt.Point;
 
 @RestController
 @RequestMapping("/unidad")
+@CrossOrigin(origins = "http://localhost:8080")
 public class UnidadController {
 
     @Autowired
     private UnidadService unidadService;
 
-    @PostMapping("/crear")
-    public ResponseEntity<UnidadDTO> crearUnidad(@RequestBody UnidadDTO dto) {
-        UnidadDTO creada = unidadService.crearUnidad(dto);
-        return new ResponseEntity<>(creada, HttpStatus.CREATED);
-    }
-
     @GetMapping("/listar")
-    public ResponseEntity<List<UnidadDTO>> listarUnidades() {
-        return ResponseEntity.ok(unidadService.listarUnidades());
+    public ResponseEntity<UnidadDTO[]> listar() {
+        MyLinkedList<UnidadDTO> lista = unidadService.listarUnidades();
+        UnidadDTO[] array = new UnidadDTO[lista.size()];
+        for (int i = 0; i < lista.size(); i++) {
+            array[i] = lista.get(i).getInfo();
+        }
+        return ResponseEntity.ok(array);
     }
-    
-    @PutMapping("/mover")
-    public ResponseEntity<String> moverUnidad(
-            @RequestParam int unidadId,
-            @RequestParam int nuevaX,
-            @RequestParam int nuevaY) {
 
-        String resultado = unidadService.moverUnidad(unidadId, nuevaX, nuevaY);
-        return ResponseEntity.ok(resultado);
+   
+    @PostMapping("/generar")
+    public ResponseEntity<UnidadDTO[]> generar(
+            @RequestParam int n,
+            @RequestParam String tipo,
+            @RequestParam String jugador) {
+        Unidad.TipoUnidad tu = Unidad.TipoUnidad.valueOf(tipo.toUpperCase());
+        MyLinkedList<UnidadDTO> lista = unidadService.generarUnidades(n, tu, jugador);
+        UnidadDTO[] array = new UnidadDTO[lista.size()];
+        for (int i = 0; i < lista.size(); i++) {
+            array[i] = lista.get(i).getInfo();
+        }
+        return ResponseEntity.status(201).body(array);
     }
-    @PostMapping("/atacar")
-    public String atacar(@RequestParam("atacanteId") Long atacanteId, @RequestParam("defensorId") Long defensorId) {
-        return unidadService.atacar(atacanteId, defensorId);
+
+    @PostMapping("/mover/{id}")
+    public ResponseEntity<Point[]> mover(
+            @PathVariable Long id,
+            @RequestParam int x,
+            @RequestParam int y) {
+        MyLinkedList<Point> ruta = unidadService.moverUnidad(id, x, y);
+        Point[] array = new Point[ruta.size()];
+        for (int i = 0; i < ruta.size(); i++) {
+            array[i] = ruta.get(i).getInfo();
+        }
+        return ResponseEntity.ok(array);
     }
 }

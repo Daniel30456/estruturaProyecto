@@ -1,54 +1,75 @@
 package co.edu.unbosque.juegoestructuraback.model;
 
 import jakarta.persistence.*;
+import java.util.EnumSet;
+import java.util.Set;
 
+/**
+ * Entidad que representa una unidad en el mapa con sus propias reglas de paso.
+ */
 @Entity
 @Table(name = "unidades")
 public class Unidad {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	public enum TipoUnidad {
+		INFANTERIA, TANQUE, BARCO, HELICOPTERO;
 
-    private String tipo;        // infantería, tanque, artillería, etc.
-    private int vida;           // puntos de vida
-    private int ataque;         // poder ofensivo
-    private int defensa;        // resistencia
-    private int alcance;        // alcance de ataque (1 para cuerpo a cuerpo)
-    private int movimiento;     // cuántas casillas puede moverse
+		/**
+		 * Define para cada tipo de unidad los terrenos transitables.
+		 */
+		public Set<Casilla.TipoTerreno> getAllowedTerrains() {
+			return switch (this) {
+			case INFANTERIA, TANQUE -> EnumSet.of(Casilla.TipoTerreno.LLANO, Casilla.TipoTerreno.BOSQUE,
+					Casilla.TipoTerreno.MONTAÑA, Casilla.TipoTerreno.CARRETERA, Casilla.TipoTerreno.EDIFICIO);
+			case BARCO -> EnumSet.of(Casilla.TipoTerreno.AGUA);
+			case HELICOPTERO -> EnumSet.allOf(Casilla.TipoTerreno.class);
+			};
+		}
+	}
 
-    private String jugador;     // jugador que controla la unidad
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "casilla_id", nullable = false)
-    private Casilla casilla;    // ubicación actual en el mapa
+	@Enumerated(EnumType.STRING)
+	private TipoUnidad tipo;
 
-    public Unidad() {}
+	private int vida;
+	private int ataque;
+	private int defensa;
+	private int alcance;
+	private int movimiento;
 
-    public Unidad(String tipo, int vida, int ataque, int defensa, int alcance, int movimiento, String jugador, Casilla casilla) {
-        this.tipo = tipo;
-        this.vida = vida;
-        this.ataque = ataque;
-        this.defensa = defensa;
-        this.alcance = alcance;
-        this.movimiento = movimiento;
-        this.jugador = jugador;
-        this.casilla = casilla;
-    }
+	private String jugador;
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "casillaId", nullable = false)
+	private Casilla casilla;
+
+	public Unidad() {
+	}
+
+	public Unidad(TipoUnidad tipo, int vida, int ataque, int defensa, int alcance, int movimiento, String jugador,
+			Casilla casilla) {
+		this.tipo = tipo;
+		this.vida = vida;
+		this.ataque = ataque;
+		this.defensa = defensa;
+		this.alcance = alcance;
+		this.movimiento = movimiento;
+		this.jugador = jugador;
+		this.casilla = casilla;
+	}
 
 	public Long getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getTipo() {
+	public TipoUnidad getTipo() {
 		return tipo;
 	}
 
-	public void setTipo(String tipo) {
+	public void setTipo(TipoUnidad tipo) {
 		this.tipo = tipo;
 	}
 
@@ -108,5 +129,12 @@ public class Unidad {
 		this.casilla = casilla;
 	}
 
-   
+	public Set<Casilla.TipoTerreno> getAllowedTerrains() {
+		return tipo.getAllowedTerrains();
+	}
+
+	@Override
+	public String toString() {
+		return "Unidad[id=" + id + ", tipo=" + tipo + ", x=" + casilla.getX() + ", y=" + casilla.getY() + "]";
+	}
 }

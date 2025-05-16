@@ -1,5 +1,6 @@
 package co.edu.unbosque.juegoestructuraback.dto;
 
+
 public class UnidadDTO {
     private Long id;
     private String tipo;
@@ -9,12 +10,13 @@ public class UnidadDTO {
     private int alcance;
     private int movimiento;
     private String jugador;
-    private int x; // posición en el mapa
+    private int x;
     private int y;
 
     public UnidadDTO() {}
 
-    public UnidadDTO(Long id, String tipo, int vida, int ataque, int defensa, int alcance, int movimiento, String jugador, int x, int y) {
+    public UnidadDTO(Long id, String tipo, int vida, int ataque, int defensa,
+                     int alcance, int movimiento, String jugador, int x, int y) {
         this.id = id;
         this.tipo = tipo;
         this.vida = vida;
@@ -27,85 +29,83 @@ public class UnidadDTO {
         this.y = y;
     }
 
-	public Long getId() {
-		return id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getTipo() {
-		return tipo;
-	}
+    public String getTipo() {
+        return tipo;
+    }
 
-	public void setTipo(String tipo) {
-		this.tipo = tipo;
-	}
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
 
-	public int getVida() {
-		return vida;
-	}
+    public int getVida() {
+        return vida;
+    }
 
-	public void setVida(int vida) {
-		this.vida = vida;
-	}
+    public void setVida(int vida) {
+        this.vida = vida;
+    }
 
-	public int getAtaque() {
-		return ataque;
-	}
+    public int getAtaque() {
+        return ataque;
+    }
 
-	public void setAtaque(int ataque) {
-		this.ataque = ataque;
-	}
+    public void setAtaque(int ataque) {
+        this.ataque = ataque;
+    }
 
-	public int getDefensa() {
-		return defensa;
-	}
+    public int getDefensa() {
+        return defensa;
+    }
 
-	public void setDefensa(int defensa) {
-		this.defensa = defensa;
-	}
+    public void setDefensa(int defensa) {
+        this.defensa = defensa;
+    }
 
-	public int getAlcance() {
-		return alcance;
-	}
+    public int getAlcance() {
+        return alcance;
+    }
 
-	public void setAlcance(int alcance) {
-		this.alcance = alcance;
-	}
+    public void setAlcance(int alcance) {
+        this.alcance = alcance;
+    }
 
-	public int getMovimiento() {
-		return movimiento;
-	}
+    public int getMovimiento() {
+        return movimiento;
+    }
 
-	public void setMovimiento(int movimiento) {
-		this.movimiento = movimiento;
-	}
+    public void setMovimiento(int movimiento) {
+        this.movimiento = movimiento;
+    }
 
-	public String getJugador() {
-		return jugador;
-	}
+    public String getJugador() {
+        return jugador;
+    }
 
-	public void setJugador(String jugador) {
-		this.jugador = jugador;
-	}
+    public void setJugador(String jugador) {
+        this.jugador = jugador;
+    }
 
-	public int getX() {
-		return x;
-	}
+    public int getX() {
+        return x;
+    }
 
-	public void setX(int x) {
-		this.x = x;
-	}
+    public void setX(int x) {
+        this.x = x;
+    }
 
-	public int getY() {
-		return y;
-	}
+    public int getY() {
+        return y;
+    }
 
-	public void setY(int y) {
-		this.y = y;
-	}
-
-    
+    public void setY(int y) {
+        this.y = y;
+    }
 }
