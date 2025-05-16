@@ -2,58 +2,59 @@ package co.edu.unbosque.juegoestructuraback.service;
 
 import co.edu.unbosque.juegoestructuraback.dto.CasillaDTO;
 import co.edu.unbosque.juegoestructuraback.model.Casilla;
+import co.edu.unbosque.juegoestructuraback.model.Casilla.TipoTerreno;
 import co.edu.unbosque.juegoestructuraback.repository.CasillaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
 public class CasillaService {
 
-    private static final int FILAS = 12;
-    private static final int COLUMNAS = 12;
-    private static final int TOTAL = FILAS * COLUMNAS;
+    private final PredefinedMapProvider mapProvider;
+    private final CasillaRepository casillaRepo;
 
-    @Autowired
-    private CasillaRepository casillaRepository;
-
-  
-    public List<CasillaDTO> obtenerMapa() {
-        List<Casilla> casillas = casillaRepository.findAll();
-        if (casillas.size() != TOTAL) {
-            casillaRepository.deleteAll();
-            casillas = generarMapa();
-        }
-        return casillas.stream()
-                .map(c -> new CasillaDTO(c.getCasillaId(), c.getX(), c.getY(), c.getTipo().name()))
-                .collect(Collectors.toList());
+    public CasillaService(PredefinedMapProvider mapProvider,
+                         CasillaRepository casillaRepo) {
+        this.mapProvider = mapProvider;
+        this.casillaRepo = casillaRepo;
     }
 
-   
+    /**
+     * Limpia la BBDD, persiste un mapa escogido de los JSON
+     * y devuelve el nuevo mapa en forma de DTOs.
+     */
     public List<CasillaDTO> reiniciarMapa() {
-        casillaRepository.deleteAll();
-        List<Casilla> mapa = generarMapa();
-        return mapa.stream()
-                .map(c -> new CasillaDTO(c.getCasillaId(), c.getX(), c.getY(), c.getTipo().name()))
-                .collect(Collectors.toList());
-    }
+        int[][] template = mapProvider.getRandomTemplate();
+        casillaRepo.deleteAll();
 
-    
-    private List<Casilla> generarMapa() {
-        List<Casilla> lista = new ArrayList<>();
-        Casilla.TipoTerreno[] tipos = Casilla.TipoTerreno.values();
-        Random rnd = new Random();
-        for (int i = 0; i < FILAS; i++) {
-            for (int j = 0; j < COLUMNAS; j++) {
-                Casilla.TipoTerreno tipo = tipos[rnd.nextInt(tipos.length)];
-                Casilla casilla = new Casilla(i, j, tipo);
-                lista.add(casilla);
+        for (int x = 0; x < template.length; x++) {
+            for (int y = 0; y < template[x].length; y++) {
+                TipoTerreno tipo = TipoTerreno.values()[template[x][y]];
+                Casilla entidad = new Casilla(x, y, tipo);
+                casillaRepo.save(entidad);
             }
         }
-        return casillaRepository.saveAll(lista);
+        return obtenerMapa();
+    }
+
+    /**
+     * Obtiene el mapa actual o lo reinicia si está vacío.
+     */
+    public List<CasillaDTO> obtenerMapa() {
+        List<Casilla> entidades = casillaRepo.findAll();
+        if (entidades.isEmpty()) {
+            return reiniciarMapa();
+        }
+        return entidades.stream()
+            .map(c -> new CasillaDTO(
+                c.getCasillaId(),
+                c.getX(),
+                c.getY(),
+                c.getTipo().name()
+            ))
+            .collect(Collectors.toList());
     }
 }
