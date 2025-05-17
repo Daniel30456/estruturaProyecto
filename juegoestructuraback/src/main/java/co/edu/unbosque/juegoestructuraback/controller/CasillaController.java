@@ -9,6 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/casillas")
+@CrossOrigin(origins = "http://localhost:8080")
 public class CasillaController {
 
     private final CasillaService casillaService;
