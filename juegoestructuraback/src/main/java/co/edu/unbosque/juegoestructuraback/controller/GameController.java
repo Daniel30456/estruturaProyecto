@@ -27,4 +27,8 @@ public class GameController {
 		GameStateDTO estado = gameService.iniciarJuego(tropasPorJugador);
 		return ResponseEntity.ok(estado);
 	}
+	@GetMapping("/estado")
+	public ResponseEntity<GameStateDTO> estado() {
+	    return ResponseEntity.ok(gameService.getEstadoActual());
+	}
 }

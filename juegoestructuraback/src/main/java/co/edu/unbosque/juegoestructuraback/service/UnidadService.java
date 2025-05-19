@@ -115,41 +115,38 @@ public class UnidadService {
 	/**
 	 * Mueve una unidad aplicando BFS y retornando la ruta en MyLinkedList<Point>.
 	 */
-	public MyLinkedList<Point> moverUnidad(Long id, int destX, int destY) {
-		Unidad u = unidadRepository.findById(id).orElseThrow();
+    public MyLinkedList<Point> moverUnidad(Long id, int destX, int destY) {
+        Unidad u = unidadRepository.findById(id).orElseThrow();
 
-		// Terrenos permitidos como array
-		Set<TipoTerreno> allowedSet = u.getAllowedTerrains();
-		TipoTerreno[] allowed = new TipoTerreno[allowedSet.size()];
-		int idx = 0;
-		for (TipoTerreno t : allowedSet) {
-			allowed[idx++] = t;
-		}
+        // Construir blocked list
+        MyLinkedList<Point> blocked = new MyLinkedList<>();
+        for (Unidad other : unidadRepository.findAll()) {
+            if (!other.getId().equals(id)) {
+                blocked.add(new Point(other.getCasilla().getX(), other.getCasilla().getY()));
+            }
+        }
 
-		// Posiciones bloqueadas excepto la actual
-		MyLinkedList<Point> blocked = new MyLinkedList<>();
-		for (Unidad other : unidadRepository.findAll()) {
-			if (!other.getId().equals(id)) {
-				blocked.add(new Point(other.getCasilla().getX(), other.getCasilla().getY()));
-			}
-		}
+        Point origen  = new Point(u.getCasilla().getX(), u.getCasilla().getY());
+        Point destino = new Point(destX, destY);
 
-		boolean flying = (u.getTipo() == Unidad.TipoUnidad.HELICOPTERO);
-		Point origen = new Point(u.getCasilla().getX(), u.getCasilla().getY());
-		Point destino = new Point(destX, destY);
+        // Llama al BFS
+        MyLinkedList<Point> ruta = bfs.findPath(
+            origen,
+            destino,
+            u.getAllowedTerrains(),            // Set<TipoTerreno>
+            blocked,
+            u.getTipo() == Unidad.TipoUnidad.HELICOPTERO
+        );
 
-		MyLinkedList<Point> ruta = bfs.findPath(origen, destino, allowed, blocked, flying);
-
-		// Actualizar posición final si llegó
-		if (ruta.size() > 0) {
-			Point fin = ruta.get(ruta.size() - 1).getInfo();
-			Casilla cdest = casillaRepository.findByXAndY(fin.x, fin.y).orElseThrow();
-			u.setCasilla(cdest);
-			unidadRepository.save(u);
-		}
-
-		return ruta;
-	}
+        // Si hay ruta, mueve la unidad
+        if (!ruta.isEmpty()) {
+            Point fin = ruta.get(ruta.size() - 1).getInfo();
+            Casilla cdest = casillaRepository.findByXAndY(fin.x, fin.y).orElseThrow();
+            u.setCasilla(cdest);
+            unidadRepository.save(u);
+        }
+        return ruta;
+    }
 
 	private UnidadDTO toDTO(Unidad u) {
 		Casilla c = u.getCasilla();

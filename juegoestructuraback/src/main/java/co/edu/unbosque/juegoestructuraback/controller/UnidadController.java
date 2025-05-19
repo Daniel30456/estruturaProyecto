@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.Point;
+import java.util.*;
 
 @RestController
 @RequestMapping("/unidad")
@@ -43,16 +44,17 @@ public class UnidadController {
         return ResponseEntity.status(201).body(array);
     }
 
-    @PostMapping("/mover/{id}")
-    public ResponseEntity<Point[]> mover(
-            @PathVariable Long id,
+    @GetMapping("/mover")
+    public List<Point> mover(
+            @RequestParam Long id,
             @RequestParam int x,
             @RequestParam int y) {
-        MyLinkedList<Point> ruta = unidadService.moverUnidad(id, x, y);
-        Point[] array = new Point[ruta.size()];
-        for (int i = 0; i < ruta.size(); i++) {
-            array[i] = ruta.get(i).getInfo();
+
+        MyLinkedList<Point> rutaLinked = unidadService.moverUnidad(id, x, y);
+        List<Point> ruta = new ArrayList<Point>(rutaLinked.size());
+        for (int i = 0; i < rutaLinked.size(); i++) {
+            ruta.add(rutaLinked.get(i).getInfo());
         }
-        return ResponseEntity.ok(array);
+        return ruta;	
     }
 }
