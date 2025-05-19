@@ -56,6 +56,63 @@ public class UnidadService {
 	}
 
 	/**
+     * Genera n unidades del tipo y jugador indicados en las primeras casillas
+     * del rectángulo [minX..maxX]×[minY..maxY], recorriéndolas por filas.
+     */
+    public MyLinkedList<UnidadDTO> generarUnidadesEnRegion(
+            int n,
+            Unidad.TipoUnidad tipo,
+            String jugador,
+            int minX, int maxX,
+            int minY, int maxY) {
+
+        MyLinkedList<UnidadDTO> generadas = new MyLinkedList<>();
+        int count = 0;
+
+        for (int x = minX; x <= maxX && count < n; x++) {
+            for (int y = minY; y <= maxY && count < n; y++) {
+
+                // Copiamos x,y en variables efectivamente finales
+                final int fx = x;
+                final int fy = y;
+
+                // 1) ¿La casilla existe y es transitable?
+                Casilla casilla = casillaRepository
+                        .findByXAndY(fx, fy)
+                        .filter(Casilla::esTransitable)
+                        .orElse(null);
+                if (casilla == null) continue;
+
+                // 2) ¿Ya hay unidad ocupando esa casilla?
+                boolean ocupada = unidadRepository.findAll().stream()
+                        .anyMatch(u -> u.getCasilla().getX() == fx
+                                    && u.getCasilla().getY() == fy);
+                if (ocupada) continue;
+
+                // 3) Crear y guardar la unidad
+                Unidad u = new Unidad(
+                    tipo,
+                    100,  // vida
+                    20,   // ataque
+                    10,   // defensa
+                    1,    // alcance
+                    tipo == Unidad.TipoUnidad.TANQUE ? 4 : 3,  // movimiento
+                    jugador,
+                    casilla
+                );
+                unidadRepository.save(u);
+
+                // 4) Añadir su DTO a la lista
+                generadas.add(toDTO(u));
+                count++;
+            }
+        }
+
+        return generadas;
+    }
+
+
+	/**
 	 * Mueve una unidad aplicando BFS y retornando la ruta en MyLinkedList<Point>.
 	 */
 	public MyLinkedList<Point> moverUnidad(Long id, int destX, int destY) {
