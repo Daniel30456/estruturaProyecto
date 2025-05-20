@@ -45,16 +45,35 @@ public class UnidadController {
     }
 
     @GetMapping("/mover")
-    public List<Point> mover(
+    public ResponseEntity<List<Point>> mover(
             @RequestParam Long id,
             @RequestParam int x,
             @RequestParam int y) {
-
+        // 1) Calcula la ruta ligada
         MyLinkedList<Point> rutaLinked = unidadService.moverUnidad(id, x, y);
-        List<Point> ruta = new ArrayList<Point>(rutaLinked.size());
+        // 2) Pasa de MyLinkedList<Node<Point>> a List<Point>
+        List<Point> ruta = new ArrayList<>(rutaLinked.size());
         for (int i = 0; i < rutaLinked.size(); i++) {
             ruta.add(rutaLinked.get(i).getInfo());
         }
-        return ruta;	
+        // 3) Devuelve 200 OK con la ruta en JSON
+        return ResponseEntity.ok(ruta);
     }
+    
+    /**
+     * GET /unidad/rango?id=<id>
+     * Devuelve el listado de puntos accesibles según el atributo movimiento de la unidad.
+     */
+    @GetMapping("/rango")
+    public ResponseEntity<List<Point>> rango(
+            @RequestParam Long id) {
+        // calcula con tu servicio los puntos accesibles
+        MyLinkedList<Point> rangoLinked = unidadService.calcularRango(id);
+        List<Point> rango = new ArrayList<>(rangoLinked.size());
+        for (int i = 0; i < rangoLinked.size(); i++) {
+            rango.add(rangoLinked.get(i).getInfo());
+        }
+        return ResponseEntity.ok(rango);
+    }
+
 }
