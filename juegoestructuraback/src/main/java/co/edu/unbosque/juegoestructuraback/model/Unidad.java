@@ -33,12 +33,13 @@ public class Unidad {
 
 	@Enumerated(EnumType.STRING)
 	private TipoUnidad tipo;
-
 	private int vida;
 	private int ataque;
 	private int defensa;
 	private int alcance;
 	private int movimiento;
+	private int x;
+	private int y;
 
 	private String jugador;
 
@@ -49,14 +50,17 @@ public class Unidad {
 	public Unidad() {
 	}
 
-	public Unidad(TipoUnidad tipo, int vida, int ataque, int defensa, int alcance, int movimiento, String jugador,
-			Casilla casilla) {
+	public Unidad(TipoUnidad tipo, int vida, int ataque, int defensa, int alcance, int movimiento, int x, int y,
+			String jugador, Casilla casilla) {
+		super();
 		this.tipo = tipo;
 		this.vida = vida;
 		this.ataque = ataque;
 		this.defensa = defensa;
 		this.alcance = alcance;
 		this.movimiento = movimiento;
+		this.x = x;
+		this.y = y;
 		this.jugador = jugador;
 		this.casilla = casilla;
 	}
@@ -131,6 +135,27 @@ public class Unidad {
 
 	public Set<Casilla.TipoTerreno> getAllowedTerrains() {
 		return tipo.getAllowedTerrains();
+	}
+	
+
+	public int getX() {
+		return x;
+	}
+
+	public void setX(int x) {
+		this.x = x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(int y) {
+		this.y = y;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	@Override
