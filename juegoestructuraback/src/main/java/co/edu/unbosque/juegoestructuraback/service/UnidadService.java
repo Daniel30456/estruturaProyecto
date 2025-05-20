@@ -163,6 +163,7 @@ public class UnidadService {
 	public MyLinkedList<Point> moverUnidad(Long id, int destX, int destY) {
 		Unidad u = unidadRepository.findById(id).orElseThrow();
 
+		// 1) Armar lista de casillas bloqueadas (coordenadas de las demás unidades)
 		MyLinkedList<Point> blocked = new MyLinkedList<>();
 		for (Unidad other : unidadRepository.findAll()) {
 			if (!other.getId().equals(id)) {
@@ -170,22 +171,33 @@ public class UnidadService {
 			}
 		}
 
+		// 2) Punto de inicio y punto destino solicitados
 		Point origen = new Point(u.getCasilla().getX(), u.getCasilla().getY());
 		Point destino = new Point(destX, destY);
 
+		// 3) Ejecutar BFS para obtener la “ruta” (lista de puntos)
 		MyLinkedList<Point> ruta = bfs.findPath(origen, destino, u.getAllowedTerrains(), blocked,
 				u.getTipo() == Unidad.TipoUnidad.HELICOPTERO);
+
 		if (!ruta.isEmpty()) {
-			Point fin = ruta.get(ruta.size() - 1).getInfo();
+			// 4) Tomar el PRIMER elemento de “ruta” como la casilla meta
+			Point fin = ruta.get(0).getInfo();
+
+			// 5) Cargar la entidad Casilla correspondiente a esas coordenadas
 			Casilla cdest = casillaRepository.findByXAndY(fin.x, fin.y)
 					.orElseThrow(() -> new IllegalStateException("Casilla no encontrada"));
 
+			// 6) Actualizar la entidad Unidad con la nueva casilla y coordenadas
 			u.setCasilla(cdest);
-			u.setX(fin.x); // ← sincroniza el campo x
-			u.setY(fin.y); // ← sincroniza el campo y
+			u.setX(fin.x);
+			u.setY(fin.y);
 
-			// 1) guarda y 2) fuerza el flush inmediatamente
+			// 7) Persistir inmediatamente el cambio
 			unidadRepository.saveAndFlush(u);
+
+			// Print para verificar en consola
+			System.out.println(
+					String.format("→ [Servicio] La unidad %d se guardó en (%d,%d)", u.getId(), u.getX(), u.getY()));
 		}
 
 		return ruta;
