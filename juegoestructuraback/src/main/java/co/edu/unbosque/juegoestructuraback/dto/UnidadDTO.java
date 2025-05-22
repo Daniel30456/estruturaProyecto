@@ -1,111 +1,131 @@
 package co.edu.unbosque.juegoestructuraback.dto;
 
-
 public class UnidadDTO {
-    private Long id;
-    private String tipo;
-    private int vida;
-    private int ataque;
-    private int defensa;
-    private int alcance;
-    private int movimiento;
-    private String jugador;
-    private int x;
-    private int y;
+	private Long id;
+	private String tipo;
+	private int vida;
+	private int ataque;
+	private int defensa;
+	private int alcance;
+	private int movimiento;
+	private String jugador;
+	private int x;
+	private int y;
 
-    public UnidadDTO() {}
+	// — Nuevo flag para saber si ya actuó esta unidad en el turno —
+	private boolean hasActed;
 
-    public UnidadDTO(Long id, String tipo, int vida, int ataque, int defensa,
-                     int alcance, int movimiento, String jugador, int x, int y) {
-        this.id = id;
-        this.tipo = tipo;
-        this.vida = vida;
-        this.ataque = ataque;
-        this.defensa = defensa;
-        this.alcance = alcance;
-        this.movimiento = movimiento;
-        this.jugador = jugador;
-        this.x = x;
-        this.y = y;
-    }
+	public UnidadDTO() {
+	}
 
-    public Long getId() {
-        return id;
-    }
+	public UnidadDTO(Long id, String tipo, int vida, int ataque, int defensa, int alcance, int movimiento,
+			String jugador, int x, int y, boolean hasActed) {
+		this.id = id;
+		this.tipo = tipo;
+		this.vida = vida;
+		this.ataque = ataque;
+		this.defensa = defensa;
+		this.alcance = alcance;
+		this.movimiento = movimiento;
+		this.jugador = jugador;
+		this.x = x;
+		this.y = y;
+		this.hasActed = hasActed;
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public UnidadDTO(Long id, String tipo, int vida, int ataque, int defensa, int alcance, int movimiento,
+			String jugador, int x, int y) {
+// delega al constructor completo
+		this(id, tipo, vida, ataque, defensa, alcance, movimiento, jugador, x, y, false);
+	}
 
-    public String getTipo() {
-        return tipo;
-    }
+	// getters/setters existentes…
+	public Long getId() {
+		return id;
+	}
 
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public int getVida() {
-        return vida;
-    }
+	public String getTipo() {
+		return tipo;
+	}
 
-    public void setVida(int vida) {
-        this.vida = vida;
-    }
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
 
-    public int getAtaque() {
-        return ataque;
-    }
+	public int getVida() {
+		return vida;
+	}
 
-    public void setAtaque(int ataque) {
-        this.ataque = ataque;
-    }
+	public void setVida(int vida) {
+		this.vida = vida;
+	}
 
-    public int getDefensa() {
-        return defensa;
-    }
+	public int getAtaque() {
+		return ataque;
+	}
 
-    public void setDefensa(int defensa) {
-        this.defensa = defensa;
-    }
+	public void setAtaque(int ataque) {
+		this.ataque = ataque;
+	}
 
-    public int getAlcance() {
-        return alcance;
-    }
+	public int getDefensa() {
+		return defensa;
+	}
 
-    public void setAlcance(int alcance) {
-        this.alcance = alcance;
-    }
+	public void setDefensa(int defensa) {
+		this.defensa = defensa;
+	}
 
-    public int getMovimiento() {
-        return movimiento;
-    }
+	public int getAlcance() {
+		return alcance;
+	}
 
-    public void setMovimiento(int movimiento) {
-        this.movimiento = movimiento;
-    }
+	public void setAlcance(int alcance) {
+		this.alcance = alcance;
+	}
 
-    public String getJugador() {
-        return jugador;
-    }
+	public int getMovimiento() {
+		return movimiento;
+	}
 
-    public void setJugador(String jugador) {
-        this.jugador = jugador;
-    }
+	public void setMovimiento(int movimiento) {
+		this.movimiento = movimiento;
+	}
 
-    public int getX() {
-        return x;
-    }
+	public String getJugador() {
+		return jugador;
+	}
 
-    public void setX(int x) {
-        this.x = x;
-    }
+	public void setJugador(String jugador) {
+		this.jugador = jugador;
+	}
 
-    public int getY() {
-        return y;
-    }
+	public int getX() {
+		return x;
+	}
 
-    public void setY(int y) {
-        this.y = y;
-    }
+	public void setX(int x) {
+		this.x = x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(int y) {
+		this.y = y;
+	}
+
+	// — Getter y setter del nuevo flag —
+	public boolean isHasActed() {
+		return hasActed;
+	}
+
+	public void setHasActed(boolean hasActed) {
+		this.hasActed = hasActed;
+	}
 }

@@ -205,6 +205,6 @@ public class UnidadService {
 
 	private UnidadDTO toDTO(Unidad u) {
 		return new UnidadDTO(u.getId(), u.getTipo().name(), u.getVida(), u.getAtaque(), u.getDefensa(), u.getAlcance(),
-				u.getMovimiento(), u.getJugador(), u.getX(), u.getY());
+				u.getMovimiento(), u.getJugador(), u.getX(), u.getY(), false);
 	}
 }
