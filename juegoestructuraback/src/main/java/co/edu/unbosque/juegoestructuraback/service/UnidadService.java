@@ -9,6 +9,7 @@ import co.edu.unbosque.juegoestructuraback.util.BfsPathFinder;
 import co.edu.unbosque.util.structure.linkedlist.MyLinkedList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.Point;
 import java.util.List;
@@ -19,192 +20,227 @@ import java.util.Random;
 @Service
 public class UnidadService {
 
-	@Autowired
-	private UnidadRepository unidadRepository;
+    @Autowired
+    private UnidadRepository unidadRepository;
 
-	@Autowired
-	private CasillaRepository casillaRepository;
+    @Autowired
+    private CasillaRepository casillaRepository;
 
-	@Autowired
-	private BfsPathFinder bfs;
+    @Autowired
+    private BfsPathFinder bfs;
 
-	/**
-	 * Lista todas las unidades existentes.
-	 */
-	public MyLinkedList<UnidadDTO> listarUnidades() {
-		MyLinkedList<UnidadDTO> lista = new MyLinkedList<>();
-		for (Unidad u : unidadRepository.findAll()) {
-			lista.add(toDTO(u));
-		}
-		return lista;
-	}
+    /** 
+     * Vida inicial según tipo de unidad.
+     * TANQUE = 20, resto = 100 
+     */
+    private int vidaPorTipo(Unidad.TipoUnidad tipo) {
+        return (tipo == Unidad.TipoUnidad.TANQUE) ? 20 : 100;
+    }
 
-	/**
-	 * Calcula todas las casillas a las que puede llegar una unidad dado su atributo
-	 * movimiento, usando BFS sobre el grid.
-	 */
-	public MyLinkedList<Point> calcularRango(Long id) {
-		Unidad u = unidadRepository.findById(id)
-				.orElseThrow(() -> new IllegalArgumentException("Unidad no encontrada: " + id));
-		int mov = u.getMovimiento();
-		Point start = new Point(u.getCasilla().getX(), u.getCasilla().getY());
+    /**
+     * Lista todas las unidades existentes.
+     */
+    public MyLinkedList<UnidadDTO> listarUnidades() {
+        MyLinkedList<UnidadDTO> lista = new MyLinkedList<>();
+        for (Unidad u : unidadRepository.findAll()) {
+            lista.add(toDTO(u));
+        }
+        return lista;
+    }
 
-		List<Casilla> allCasillas = casillaRepository.findAll();
-		int maxX = 0, maxY = 0;
-		for (Casilla c : allCasillas) {
-			maxX = Math.max(maxX, c.getX());
-			maxY = Math.max(maxY, c.getY());
-		}
-		int width = maxX + 1;
-		int height = maxY + 1;
+    /**
+     * Calcula todas las casillas a las que puede llegar una unidad
+     * dado su atributo movimiento, usando BFS sobre el grid.
+     */
+    public MyLinkedList<Point> calcularRango(Long id) {
+        Unidad u = unidadRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Unidad no encontrada: " + id));
+        int mov = u.getMovimiento();
+        Point start = new Point(u.getCasilla().getX(), u.getCasilla().getY());
 
-		boolean[][] passable = new boolean[height][width];
-		for (Casilla c : allCasillas) {
-			passable[c.getY()][c.getX()] = c.esTransitable();
-		}
+        List<Casilla> allCasillas = casillaRepository.findAll();
+        int maxX = 0, maxY = 0;
+        for (Casilla c : allCasillas) {
+            maxX = Math.max(maxX, c.getX());
+            maxY = Math.max(maxY, c.getY());
+        }
+        int width = maxX + 1, height = maxY + 1;
 
-		int[][] dist = new int[height][width];
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				dist[y][x] = -1;
-			}
-		}
-		Queue<Point> queue = new LinkedList<>();
-		queue.add(start);
-		dist[start.y][start.x] = 0;
+        boolean[][] passable = new boolean[height][width];
+        for (Casilla c : allCasillas) {
+            passable[c.getY()][c.getX()] = c.esTransitable();
+        }
 
-		MyLinkedList<Point> rango = new MyLinkedList<>();
-		int[][] dirs = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+        int[][] dist = new int[height][width];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                dist[y][x] = -1;
+            }
+        }
 
-		while (!queue.isEmpty()) {
-			Point p = queue.poll();
-			int d = dist[p.y][p.x];
-			if (d > mov)
-				continue;
+        Queue<Point> queue = new LinkedList<>();
+        queue.add(start);
+        dist[start.y][start.x] = 0;
 
-			rango.add(p);
+        MyLinkedList<Point> rango = new MyLinkedList<>();
+        int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
 
-			for (int[] dir : dirs) {
-				int nx = p.x + dir[0], ny = p.y + dir[1];
-				if (nx >= 0 && ny >= 0 && nx < width && ny < height && dist[ny][nx] == -1 && passable[ny][nx]) {
-					dist[ny][nx] = d + 1;
-					queue.add(new Point(nx, ny));
-				}
-			}
-		}
+        while (!queue.isEmpty()) {
+            Point p = queue.poll();
+            int d = dist[p.y][p.x];
+            if (d > mov) continue;
+            rango.add(p);
+            for (int[] dir : dirs) {
+                int nx = p.x + dir[0], ny = p.y + dir[1];
+                if (nx>=0 && ny>=0 && nx<width && ny<height
+                 && dist[ny][nx]==-1 && passable[ny][nx]) {
+                    dist[ny][nx] = d+1;
+                    queue.add(new Point(nx,ny));
+                }
+            }
+        }
+        return rango;
+    }
 
-		return rango;
-	}
+    /**
+     * Genera n unidades aleatorias del tipo y jugador indicados.
+     */
+    public MyLinkedList<UnidadDTO> generarUnidades(int n, Unidad.TipoUnidad tipo, String jugador) {
+        Random rnd = new Random();
+        for (int i = 0; i < n; i++) {
+            Casilla casilla;
+            do {
+                int x = rnd.nextInt(12), y = rnd.nextInt(12);
+                casilla = casillaRepository.findByXAndY(x,y)
+                          .filter(Casilla::esTransitable)
+                          .orElse(null);
+            } while (casilla == null);
 
-	/**
-	 * Genera n unidades aleatorias del tipo y jugador indicados.
-	 */
-	public MyLinkedList<UnidadDTO> generarUnidades(int n, Unidad.TipoUnidad tipo, String jugador) {
-		Random rnd = new Random();
-		for (int i = 0; i < n; i++) {
-			Casilla casilla;
-			do {
-				int x = rnd.nextInt(12), y = rnd.nextInt(12);
-				casilla = casillaRepository.findByXAndY(x, y).filter(Casilla::esTransitable).orElse(null);
-			} while (casilla == null);
+            Unidad u = new Unidad(
+                tipo,
+                vidaPorTipo(tipo),             // vida variable
+                20,                             // ataque fijo
+                10,                             // defensa fija
+                1,                              // alcance fijo
+                (tipo==Unidad.TipoUnidad.TANQUE?4:3), // movimiento
+                casilla.getX(), casilla.getY(),
+                jugador,
+                casilla
+            );
+            unidadRepository.save(u);
+        }
+        return listarUnidades();
+    }
 
-			// Parámetros: tipo, vida, ataque, defensa, alcance, movimiento, x, y, jugador,
-			// casilla
-			Unidad u = new Unidad(tipo, 100, // vida
-					20, // ataque
-					10, // defensa
-					1, // alcance
-					tipo == Unidad.TipoUnidad.TANQUE ? 4 : 3, // movimiento
-					casilla.getX(), // x
-					casilla.getY(), // y
-					jugador, // jugador
-					casilla // Casilla entity
-			);
-			unidadRepository.save(u);
-		}
-		return listarUnidades();
-	}
+    /**
+     * Genera n unidades en una región [minX..maxX]×[minY..maxY].
+     */
+    public MyLinkedList<UnidadDTO> generarUnidadesEnRegion(
+            int n, Unidad.TipoUnidad tipo, String jugador,
+            int minX, int maxX, int minY, int maxY) {
 
-	/**
-	 * Genera n unidades en una región definida por [minX..maxX]×[minY..maxY].
-	 */
-	public MyLinkedList<UnidadDTO> generarUnidadesEnRegion(int n, Unidad.TipoUnidad tipo, String jugador, int minX,
-			int maxX, int minY, int maxY) {
+        MyLinkedList<UnidadDTO> generadas = new MyLinkedList<>();
+        int count = 0;
 
-		MyLinkedList<UnidadDTO> generadas = new MyLinkedList<>();
-		int count = 0;
+        for (int x = minX; x <= maxX && count < n; x++) {
+            for (int y = minY; y <= maxY && count < n; y++) {
+                // capturamos x,y en variables efectivamente finales
+                final int fx = x, fy = y;
 
-		for (int x = minX; x <= maxX && count < n; x++) {
-			for (int y = minY; y <= maxY && count < n; y++) {
-				final int fx = x, fy = y;
-				Casilla casilla = casillaRepository.findByXAndY(fx, fy).filter(Casilla::esTransitable).orElse(null);
-				if (casilla == null)
-					continue;
+                Casilla casilla = casillaRepository
+                    .findByXAndY(fx, fy)
+                    .filter(Casilla::esTransitable)
+                    .orElse(null);
 
-				boolean ocupada = unidadRepository.findAll().stream()
-						.anyMatch(o -> o.getCasilla().getX() == fx && o.getCasilla().getY() == fy);
-				if (ocupada)
-					continue;
+                if (casilla == null) {
+                    continue;
+                }
 
-				Unidad u = new Unidad(tipo, 100, 20, 10, 1, tipo == Unidad.TipoUnidad.TANQUE ? 4 : 3, casilla.getX(),
-						casilla.getY(), jugador, casilla);
-				unidadRepository.save(u);
-				generadas.add(toDTO(u));
-				count++;
-			}
-		}
+                boolean ocupada = unidadRepository.findAll().stream()
+                    .anyMatch(o ->
+                        o.getCasilla().getX() == fx &&
+                        o.getCasilla().getY() == fy
+                    );
+                if (ocupada) {
+                    continue;
+                }
 
-		return generadas;
-	}
+                int vida   = vidaPorTipo(tipo);
+                int mov    = (tipo == Unidad.TipoUnidad.TANQUE ? 4 : 3);
 
-	/**
-	 * Mueve una unidad aplicando BFS y retornando la ruta en MyLinkedList<Point>.
-	 */
-	public MyLinkedList<Point> moverUnidad(Long id, int destX, int destY) {
-		Unidad u = unidadRepository.findById(id).orElseThrow();
+                Unidad u = new Unidad(
+                    tipo,
+                    vida,
+                    20,
+                    10,
+                    1,
+                    mov,
+                    fx,
+                    fy,
+                    jugador,
+                    casilla
+                );
+                unidadRepository.save(u);
+                generadas.add(toDTO(u));
+                count++;
+            }
+        }
 
-		// 1) Armar lista de casillas bloqueadas (coordenadas de las demás unidades)
-		MyLinkedList<Point> blocked = new MyLinkedList<>();
-		for (Unidad other : unidadRepository.findAll()) {
-			if (!other.getId().equals(id)) {
-				blocked.add(new Point(other.getCasilla().getX(), other.getCasilla().getY()));
-			}
-		}
+        return generadas;
+    }
 
-		// 2) Punto de inicio y punto destino solicitados
-		Point origen = new Point(u.getCasilla().getX(), u.getCasilla().getY());
-		Point destino = new Point(destX, destY);
 
-		// 3) Ejecutar BFS para obtener la “ruta” (lista de puntos)
-		MyLinkedList<Point> ruta = bfs.findPath(origen, destino, u.getAllowedTerrains(), blocked,
-				u.getTipo() == Unidad.TipoUnidad.HELICOPTERO);
+    /**
+     * Mueve una unidad aplicando BFS y retorna la ruta.
+     */
+    @Transactional
+    public MyLinkedList<Point> moverUnidad(Long id, int destX, int destY) {
+        Unidad u = unidadRepository.findById(id).orElseThrow();
 
-		if (!ruta.isEmpty()) {
-			// 4) Tomar el PRIMER elemento de “ruta” como la casilla meta
-			Point fin = ruta.get(0).getInfo();
+        // bloqueos por otras unidades
+        MyLinkedList<Point> blocked = new MyLinkedList<>();
+        for (Unidad other : unidadRepository.findAll()) {
+            if (!other.getId().equals(id)) {
+                blocked.add(new Point(other.getCasilla().getX(), other.getCasilla().getY()));
+            }
+        }
 
-			// 5) Cargar la entidad Casilla correspondiente a esas coordenadas
-			Casilla cdest = casillaRepository.findByXAndY(fin.x, fin.y)
-					.orElseThrow(() -> new IllegalStateException("Casilla no encontrada"));
+        Point origen = new Point(u.getCasilla().getX(), u.getCasilla().getY());
+        Point destino = new Point(destX, destY);
 
-			// 6) Actualizar la entidad Unidad con la nueva casilla y coordenadas
-			u.setCasilla(cdest);
-			u.setX(fin.x);
-			u.setY(fin.y);
+        MyLinkedList<Point> ruta = bfs.findPath(
+            origen, destino,
+            u.getAllowedTerrains(),
+            blocked,
+            u.getTipo()==Unidad.TipoUnidad.HELICOPTERO
+        );
 
-			// 7) Persistir inmediatamente el cambio
-			unidadRepository.saveAndFlush(u);
+        if (!ruta.isEmpty()) {
+            Point fin = ruta.get(0).getInfo();
+            Casilla cdest = casillaRepository.findByXAndY(fin.x, fin.y)
+                             .orElseThrow(() -> new IllegalStateException("Casilla no encontrada"));
+            u.setCasilla(cdest);
+            u.setX(fin.x);
+            u.setY(fin.y);
+            unidadRepository.saveAndFlush(u);
+            System.out.printf("→ [Servicio] Unidad %d movida a (%d,%d)%n", u.getId(), u.getX(), u.getY());
+        }
+        return ruta;
+    }
 
-			// Print para verificar en consola
-			System.out.println(
-					String.format("→ [Servicio] La unidad %d se guardó en (%d,%d)", u.getId(), u.getX(), u.getY()));
-		}
-
-		return ruta;
-	}
-
-	private UnidadDTO toDTO(Unidad u) {
-		return new UnidadDTO(u.getId(), u.getTipo().name(), u.getVida(), u.getAtaque(), u.getDefensa(), u.getAlcance(),
-				u.getMovimiento(), u.getJugador(), u.getX(), u.getY(), false);
-	}
+    private UnidadDTO toDTO(Unidad u) {
+        return new UnidadDTO(
+            u.getId(),
+            u.getTipo().name(),
+            u.getVida(),
+            u.getAtaque(),
+            u.getDefensa(),
+            u.getAlcance(),
+            u.getMovimiento(),
+            u.getJugador(),
+            u.getX(),
+            u.getY(),
+            false
+        );
+    }
 }

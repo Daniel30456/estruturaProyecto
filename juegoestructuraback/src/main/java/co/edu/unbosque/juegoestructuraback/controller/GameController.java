@@ -57,5 +57,18 @@ public class GameController {
         GameStateDTO siguiente = gameService.moveUnidad(unidadId, x, y, estadoActual);
         return ResponseEntity.ok(siguiente);
     }
+    
+ // En GameController.java
+
+    @PostMapping("/attack")
+    public ResponseEntity<GameStateDTO> attack(
+            @RequestParam Long attackerId,
+            @RequestParam Long defenderId,
+            @RequestBody GameStateDTO state) {
+
+        GameStateDTO next = gameService.attackUnidad(attackerId, defenderId, state);
+        return ResponseEntity.ok(next);
+    }
+
 
 }
