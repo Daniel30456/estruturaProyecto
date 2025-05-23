@@ -34,44 +34,35 @@ public class GameService {
 		this.unidadService = unidadService;
 	}
 
-	@Transactional
 	/**
 	 * Reinicia el mapa, genera tropas, e inicializa control de turnos.
 	 */
+	@Transactional
 	public GameStateDTO iniciarJuego(int tropasPorJugador) {
 		// 1) Reinicia y obtiene lista de casillas
 		List<CasillaDTO> mapaDto = casillaService.reiniciarMapa();
 
-		// 2) Elige el tipo de unidad (p. ej. TANQUE)
-		Unidad.TipoUnidad tipo = Unidad.TipoUnidad.TANQUE;
+		// 2) Genera n unidades de Jugador 1 con tipos aleatorios en la región 0..2×0..2
+		MyLinkedList<UnidadDTO> j1 = unidadService.generarUnidadesEnRegion(tropasPorJugador, "Jugador 1", 0, 2, 0, 2);
 
-		// 3) Genera tropas de jugador1
-		MyLinkedList<UnidadDTO> j1 = unidadService.generarUnidadesEnRegion(tropasPorJugador, tipo, "Jugador 1", 0, 2, // filas
-																														// 0..2
-				0, 2 // columnas 0..2
-		);
+		// 3) Genera n unidades de Jugador 2 con tipos aleatorios en la región
+		// 9..11×9..11
+		MyLinkedList<UnidadDTO> j2 = unidadService.generarUnidadesEnRegion(tropasPorJugador, "Jugador 2", 9, 11, 9, 11);
 
-		// 4) Genera tropas de jugador2
-		MyLinkedList<UnidadDTO> j2 = unidadService.generarUnidadesEnRegion(tropasPorJugador, tipo, "Jugador 2", 9, 11, // filas
-																														// 9..11
-				9, 11 // columnas 9..11
-		);
-
-		// 5) Combina en lista Java normal
+		// 4) Combina en una lista normal
 		List<UnidadDTO> todas = new ArrayList<>();
 		j1.forEach(todas::add);
 		j2.forEach(todas::add);
 
-		// 6) Inicializa flags de acción
+		// 5) Inicializa flags de acción
 		todas.forEach(u -> u.setHasActed(false));
 
-		// 7) Construye el DTO incluyendo turno
+		// 6) Construye y retorna el estado inicial
 		GameStateDTO state = new GameStateDTO();
 		state.setMapa(mapaDto);
 		state.setUnidades(todas);
 		state.setCurrentPlayer("Jugador 1");
 		state.setTurnNumber(1);
-
 		return state;
 	}
 
