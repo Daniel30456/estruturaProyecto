@@ -110,9 +110,10 @@ public class GameService {
 		return state;
 	}
 
-	// Método helper de mapeo
+	// Método helper de mapeo en GameService
 	private CasillaDTO toDTO(Casilla c) {
-		return new CasillaDTO(c.getCasillaId(), c.getX(), c.getY(), c.getTipo() != null ? c.getTipo().name() : null);
+		return new CasillaDTO(c.getCasillaId(), c.getX(), c.getY(), c.getTipo() != null ? c.getTipo().name() : null,
+				c.getPropietario());
 	}
 
 	private UnidadDTO toDTO(Unidad u) {
@@ -229,6 +230,42 @@ public class GameService {
 
 		// 9) Construye y retorna el nuevo estado
 		prevState.setUnidades(units);
+		return prevState;
+	}
+
+	public GameStateDTO captureTower(Long unidadId, Integer casillaId, GameStateDTO prevState) {
+		// 1) Busca la unidad en el estado
+		UnidadDTO unidad = prevState.getUnidades().stream().filter(u -> u.getId().equals(unidadId)).findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("Unidad no encontrada"));
+
+		// 2) Validaciones de turno y acción
+		if (!unidad.getJugador().equals(prevState.getCurrentPlayer())) {
+			throw new IllegalStateException("No es tu turno");
+		}
+		if (unidad.isHasActed()) {
+			throw new IllegalStateException("Esta unidad ya actuó");
+		}
+
+		// 3) Carga la casilla y valida que sea un edificio
+		Casilla torre = casillaRepository.findById(casillaId)
+				.orElseThrow(() -> new IllegalArgumentException("Casilla no encontrada"));
+		if (torre.getTipo() != Casilla.TipoTerreno.EDIFICIO) {
+			throw new IllegalArgumentException("La casilla no es un edificio");
+		}
+
+		// 4) Cambia el propietario y guarda
+		torre.setPropietario(unidad.getJugador());
+		casillaRepository.save(torre);
+
+		// 5) Marca la unidad como ya actuada en el DTO
+		unidad.setHasActed(true);
+
+		// 6) Refresca el mapa en el estado para incluir el nuevo propietario
+		List<CasillaDTO> mapaActualizado = casillaRepository.findAll().stream().map(this::toDTO)
+				.collect(Collectors.toList());
+		prevState.setMapa(mapaActualizado);
+
+		// 7) Devuelve el estado modificado (con mismo currentPlayer y turnNumber)
 		return prevState;
 	}
 }

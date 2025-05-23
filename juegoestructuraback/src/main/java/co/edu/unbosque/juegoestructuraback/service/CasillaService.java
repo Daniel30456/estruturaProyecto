@@ -55,14 +55,15 @@ public class CasillaService {
 
         // 5) convierte a DTOs sin necesidad de volver a consultar BD
         return entidades.stream()
-            .map(c -> new CasillaDTO(
-                c.getCasillaId(),
-                c.getX(),
-                c.getY(),
-                c.getTipo().name()
-            ))
-            .collect(Collectors.toList());
-    }
+                .map(c -> new CasillaDTO(
+                    c.getCasillaId(),
+                    c.getX(),
+                    c.getY(),
+                    c.getTipo().name(),
+                    c.getPropietario()
+                ))
+                .collect(Collectors.toList());
+        }
 
     /**
      * Obtiene el mapa actual o lo reinicia si está vacío.
@@ -73,12 +74,13 @@ public class CasillaService {
             return reiniciarMapa();
         }
         return entidades.stream()
-            .map(c -> new CasillaDTO(
-                c.getCasillaId(),
-                c.getX(),
-                c.getY(),
-                c.getTipo().name()
-            ))
-            .collect(Collectors.toList());
+                .map(c -> new CasillaDTO(
+                    c.getCasillaId(),
+                    c.getX(),
+                    c.getY(),
+                    c.getTipo().name(),
+                    c.getPropietario()
+                ))
+                .collect(Collectors.toList());
     }
 }
